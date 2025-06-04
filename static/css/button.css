@@ -1,0 +1,60 @@
+
+  button {
+    background-color: rgb(60, 192, 249); 
+    color: rgb(255, 255, 255); 
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+
+  button:hover {
+    background-color: rgb(30, 150, 210); 
+  }
+
+.delete-btn {
+  background-color: rgb(120, 200, 255); 
+  border: none;
+  padding: 6px 10px;
+  font-size: 18px;
+  color: rgb(10, 52, 91); 
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: rgb(60, 192, 249); 
+}
+
+a.add-button {
+  text-decoration: none;
+  display: block;
+  width: fit-content;
+  background-color: rgb(60, 192, 249);
+  color: white;
+  padding: 10px 30px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 auto; 
+}
+
+a.add-button:hover {
+  background-color: rgb(30, 150, 210);
+}
+
+.add-form-bottom {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 0.8rem;
+  justify-content: center;  
+}

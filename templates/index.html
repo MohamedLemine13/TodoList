@@ -3,20 +3,20 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Ma Liste de Tâches</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <title>Ajouter une Tâche</title>
+    {% include 'styles.html' %}
 </head>
 
 <body>
+    <form method="POST" action="/logout" class="logout-top-right" onsubmit="return confirmLogout();">
+        <button type="submit">Déconnexion</button>
+    </form>
     <div class="container">
+        <h1>➕ Nouvelle Tâche</h1>
 
-        <h1>📋 Ma Liste de Tâches</h1>
-
-        <form method="POST" action="/add" class="add-form">
-            <!-- Ligne 1 : tâche seule -->
+        <form method="POST" action="/add" class="add-form" autocomplete="off">
             <input type="text" name="task" placeholder="Nouvelle tâche" required>
 
-            <!-- Ligne 2 : statut, catégorie, priorité, bouton -->
             <div class="add-form-bottom">
                 <select name="status" required>
                     <option value="à faire">À faire</option>
@@ -45,81 +45,20 @@
             </div>
         </form>
 
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/tasks" class="add-button" style="display: inline-block;">📋 Voir toutes les tâches</a>
+        </div>
 
-        <form method="GET" action="/" class="filter-form">
-            <div class="filter-line">
-                <select name="category">
-                    <option value="all">Toutes les catégories</option>
-                    {% for cat in categories %}
-                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                    {% endfor %}
-                </select>
-
-                <select name="priority">
-                    <option value="all">Toutes les priorités</option>
-                    {% for prio in priorities %}
-                    <option value="{{ prio.id }}">{{ prio.level }}</option>
-                    {% endfor %}
-                </select>
-
-                <select name="status">
-                    <option value="all">Tous les statuts</option>
-                    <option value="à faire">À faire</option>
-                    <option value="en cours">En cours</option>
-                    <option value="terminé">Terminé</option>
-                </select>
-            </div>
-
-            <div class="filter-submit">
-                <button type="submit">Filtrer</button>
-            </div>
-        </form>
-
-
-
-        <ul class="task-list">
-            {% for task in todos %}
-            <li>
-                <div class="task-box">
-                    <div class="task-left">
-                        <strong>{{ task.task }}</strong>
-                    </div>
-
-                    <div class="task-right">
-                        <div class="task-meta">
-                            <span class="category-tag">📂 {{ task.category_name or "Non spécifiée" }}</span>
-                            <span class="priority-tag {{ task.priority_level|lower }}">🔥 {{ task.priority_level
-                                }}</span>
-                        </div>
-
-                        <div class="task-actions">
-                            <form method="POST" action="/update/{{ task.id }}">
-                                <select name="status" class="task-status" onchange="this.form.submit()">
-                                    <option value="à faire" {% if task.status=='à faire' %}selected{% endif %}>À faire
-                                    </option>
-                                    <option value="en cours" {% if task.status=='en cours' %}selected{% endif %}>En
-                                        cours</option>
-                                    <option value="terminé" {% if task.status=='terminé' %}selected{% endif %}>Terminé
-                                    </option>
-                                </select>
-                            </form>
-
-                            <form method="POST" action="/delete/{{ task.id }}">
-                                <button type="submit" class="delete-btn" title="Supprimer">&#128465;</button>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
-
-            </li>
-            {% endfor %}
-        </ul>
-        <form method="POST" action="/logout" class="logout-form">
-            <button type="submit">Déconnexion</button>
-        </form>
 
     </div>
+
+    <script>
+        function confirmLogout() {
+            return confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
+        }
+    </script>
+
+
     <script>
         document.getElementById('category-select').addEventListener('change', function () {
             if (this.value === 'new') {
@@ -129,21 +68,19 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: newCat.trim() })
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                location.reload();
-                            } else {
-                                alert("Erreur lors de l'ajout de la catégorie.");
-                            }
-                        });
+                    }).then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert("Erreur lors de l'ajout de la catégorie.");
+                        }
+                    });
                 } else {
-                    this.value = "";  // reset si l'utilisateur annule
+                    this.value = "";
                 }
             }
         });
     </script>
-
 </body>
 
 </html>

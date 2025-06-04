@@ -3,16 +3,15 @@ import mysql.connector
 from flask import session
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 app = Flask(__name__)
 
-app.secret_key = 'mon_secret'  # Nécessaire pour gérer les sessions
+app.secret_key = 'mon_secret' 
 
-# 🛠️ MySQL config
+
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'root',       # 🔁 replace with your MySQL username
-    'password': '',   # 🔁 replace with your MySQL password
+    'user': 'root',      
+    'password': '',  
     'database': 'todo_db'
 }
 
@@ -34,7 +33,7 @@ def login():
 
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
-            return redirect('/')
+            return redirect('/tasks')
         else:
             error = "Identifiants invalides"
 
@@ -53,8 +52,9 @@ def register():
         try:
             cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_pw))
             conn.commit()
+            session['user_id'] = cursor.lastrowid  
             conn.close()
-            return redirect('/login')
+            return redirect('/tasks')  
         except mysql.connector.errors.IntegrityError:
             conn.close()
             error = "Nom d'utilisateur déjà pris"
@@ -63,8 +63,24 @@ def register():
 
 
 
-@app.route('/', methods=['GET'])
-def index():
+@app.route('/')
+def home():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM categories")
+    categories = cursor.fetchall()
+    cursor.execute("SELECT * FROM priorities")
+    priorities = cursor.fetchall()
+    conn.close()
+
+    return render_template('index.html', categories=categories, priorities=priorities)
+
+
+@app.route('/tasks', methods=['GET'])
+def tasks():
     if 'user_id' not in session:
         return redirect('/login')
 
@@ -75,13 +91,11 @@ def index():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Charger catégories et priorités pour le formulaire
     cursor.execute("SELECT * FROM categories")
     categories = cursor.fetchall()
     cursor.execute("SELECT * FROM priorities")
     priorities = cursor.fetchall()
 
-    # Construction dynamique de la requête
     query = """
         SELECT todos.*, categories.name AS category_name, priorities.level AS priority_level
         FROM todos  
@@ -94,22 +108,19 @@ def index():
     if category_filter and category_filter != "all":
         query += " AND todos.category_id = %s"
         params.append(category_filter)
-
     if priority_filter and priority_filter != "all":
         query += " AND todos.priority_id = %s"
         params.append(priority_filter)
-
     if status_filter and status_filter != "all":
         query += " AND todos.status = %s"
         params.append(status_filter)
 
-    query += " ORDER BY todos.id DESC"  # ou `created_at` si tu ajoutes cette colonne
-
+    query += " ORDER BY todos.id DESC"
     cursor.execute(query, params)
     todos = cursor.fetchall()
 
     conn.close()
-    return render_template('index.html', todos=todos, categories=categories, priorities=priorities)
+    return render_template('tasks.html', todos=todos, categories=categories, priorities=priorities)
 
 
 
@@ -139,7 +150,7 @@ def update(id):
     cursor.execute("UPDATE todos SET status = %s WHERE id = %s", (status, id))
     conn.commit()
     conn.close()
-    return redirect('/')
+    return redirect('/tasks')
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
@@ -148,7 +159,7 @@ def delete(id):
     cursor.execute("DELETE FROM todos WHERE id = %s", (id,))
     conn.commit()
     conn.close()
-    return redirect('/')
+    return redirect('/tasks')
 
 @app.route('/add_category', methods=['POST'])
 def add_category():
